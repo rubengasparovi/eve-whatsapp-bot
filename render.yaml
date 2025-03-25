@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: eve-whatsapp
+    env: python
+    buildCommand: ""
+    startCommand: gunicorn eve_bot:app
