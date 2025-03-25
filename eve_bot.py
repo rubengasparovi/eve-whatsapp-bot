@@ -6,12 +6,12 @@ import os
 
 app = Flask(__name__)
 
-# Load API keys from environment variables
+# Load API keys and secrets from environment variables
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 TWILIO_SID = os.getenv("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH = os.getenv("TWILIO_AUTH_TOKEN")
 
-# Simple in-memory session to track who sent an image
+# In-memory session store
 user_sessions = {}
 
 
@@ -40,17 +40,18 @@ def process_image_with_gemini(prompt, image_url):
     print("📥 Prompt:", prompt)
     print("🌐 Image URL:", image_url)
 
-    # Step 1: Download Twilio image with authentication
+    # Step 1: Download image with Twilio credentials
     try:
         image_response = requests.get(image_url, auth=(TWILIO_SID, TWILIO_AUTH))
+        print("📥 Image download status:", image_response.status_code)
         image_response.raise_for_status()
         image_bytes = image_response.content
         image_base64 = base64.b64encode(image_bytes).decode('utf-8')
     except Exception as e:
-        print("❌ Error downloading or encoding image:", str(e))
+        print("❌ Image download failed:", str(e))
         return "Sorry, I couldn't download the image."
 
-    # Step 2: Prepare request to Gemini
+    # Step 2: Prepare Gemini request
     headers = {
         "Content-Type": "application/json"
     }
@@ -73,7 +74,7 @@ def process_image_with_gemini(prompt, image_url):
         ]
     }
 
-    # Step 3: Send to Gemini
+    # Step 3: Call Gemini API
     try:
         response = requests.post(url, headers=headers, data=json.dumps(data))
         print("📡 Gemini response status:", response.status_code)
@@ -83,10 +84,9 @@ def process_image_with_gemini(prompt, image_url):
             return response.json()['candidates'][0]['content']['parts'][0]['text']
         else:
             return f"Gemini couldn't process the image: {response.text}"
-
     except Exception as e:
-        print("❌ Error during Gemini request:", str(e))
-        return "Something went wrong while talking to Gemini."
+        print("❌ Gemini API error:", str(e))
+        return "Sorry, something went wrong while talking to Gemini."
 
 
 def respond(message):
