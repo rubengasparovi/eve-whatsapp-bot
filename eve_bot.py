@@ -32,13 +32,20 @@ def whatsapp_bot():
 
 
 def process_image_with_gemini(prompt, image_url):
+    print("📥 Prompt:", prompt)
+    print("🌐 Image URL:", image_url)
+
+    try:
+        image_bytes = requests.get(image_url).content
+        image_base64 = base64.b64encode(image_bytes).decode('utf-8')
+    except Exception as e:
+        print("❌ Error downloading or encoding image:", str(e))
+        return "Sorry, I couldn't download the image."
+
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {GEMINI_API_KEY}"
     }
-
-    image_bytes = requests.get(image_url).content
-    image_base64 = base64.b64encode(image_bytes).decode('utf-8')
 
     data = {
         "contents": [
@@ -56,16 +63,23 @@ def process_image_with_gemini(prompt, image_url):
         ]
     }
 
-    response = requests.post(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent",
-        headers=headers,
-        data=json.dumps(data)
-    )
+    try:
+        response = requests.post(
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent",
+            headers=headers,
+            data=json.dumps(data)
+        )
+        print("📡 Gemini response status:", response.status_code)
+        print("📨 Gemini raw response:", response.text)
 
-    if response.status_code == 200:
-        return response.json()['candidates'][0]['content']['parts'][0]['text']
-    else:
-        return "Sorry, I couldn't analyze the image."
+        if response.status_code == 200:
+            return response.json()['candidates'][0]['content']['parts'][0]['text']
+        else:
+            return "Gemini couldn't process the image: " + response.text
+
+    except Exception as e:
+        print("❌ Error during Gemini request:", str(e))
+        return "Sorry, something went wrong while talking to Gemini."
 
 
 def respond(message):
