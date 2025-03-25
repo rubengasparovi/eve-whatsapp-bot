@@ -43,9 +43,10 @@ def process_image_with_gemini(prompt, image_url):
         return "Sorry, I couldn't download the image."
 
     headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {GEMINI_API_KEY}"
+        "Content-Type": "application/json"
     }
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key={GEMINI_API_KEY}"
 
     data = {
         "contents": [
@@ -64,11 +65,7 @@ def process_image_with_gemini(prompt, image_url):
     }
 
     try:
-        response = requests.post(
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent",
-            headers=headers,
-            data=json.dumps(data)
-        )
+        response = requests.post(url, headers=headers, data=json.dumps(data))
         print("📡 Gemini response status:", response.status_code)
         print("📨 Gemini raw response:", response.text)
 
