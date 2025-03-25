@@ -6,7 +6,7 @@ import os
 
 app = Flask(__name__)
 
-GEMINI_API_KEY = os.getenv("AIzaSyCYu359IS6Ay-PZYqRTeRJl-Xp2e76QT64")  # safer than hardcoding
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")  # safer than hardcoding
 
 user_sessions = {}
 
@@ -34,7 +34,7 @@ def whatsapp_bot():
 def process_image_with_gemini(prompt, image_url):
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {AIzaSyCYu359IS6Ay-PZYqRTeRJl-Xp2e76QT64}"
+        "Authorization": f"Bearer {GEMINI_API_KEY}"
     }
 
     image_bytes = requests.get(image_url).content
